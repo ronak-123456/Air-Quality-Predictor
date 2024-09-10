@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Air Quality Predictor</h1>
+            <p class="text-xl text-gray-600">Forecast the future of your environment</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Current Air Quality</h2>
+                <div class="flex justify-center items-center h-64">
+                    <canvas id="aqiGauge"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Forecast</h2>
+                <canvas id="forecastChart"></canvas>
+            </div>
+        </div>
+
+        <div class="mt-12 bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Predict Air Quality</h2>
+            <form id="predictionForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="pm25" class="block text-sm font-medium text-gray-700">PM2.5</label>
+                    <input type="number" id="pm25" name="pm25" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="pm10" class="block text-sm font-medium text-gray-700">PM10</label>
+                    <input type="number" id="pm10" name="pm10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="no2" class="block text-sm font-medium text-gray-700">NO2</label>
+                    <input type="number" id="no2" name="no2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="co" class="block text-sm font-medium text-gray-700">CO</label>
+                    <input type="number" id="co" name="co" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="so2" class="block text-sm font-medium text-gray-700">SO2</label>
+                    <input type="number" id="so2" name="so2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="o3" class="block text-sm font-medium text-gray-700">O3</label>
+                    <input type="number" id="o3" name="o3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="temperature" class="block text-sm font-medium text-gray-700">Temperature</label>
+                    <input type="number" id="temperature" name="temperature" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="humidity" class="block text-sm font-medium text-gray-700">Humidity</label>
+                    <input type="number" id="humidity" name="humidity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="wind_speed" class="block text-sm font-medium text-gray-700">Wind Speed</label>
+                    <input type="number" id="wind_speed" name="wind_speed" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="wind_direction" class="block text-sm font-medium text-gray-700">Wind Direction</label>
+                    <input type="number" id="wind_direction" name="wind_direction" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div class="md:col-span-2">
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300">
+                        Predict Air Quality
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // AQI Gauge
+        const aqiGauge = new Chart(document.getElementById('aqiGauge'), {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [75, 25],
+                    backgroundColor: ['#4CAF50', '#ECEFF1'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '80%',
+                responsive: true,
+                maintainAspectRatio: false,
+                circumference: 180,
+                rotation: 270,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                }
+            }
+        });
+
+        // Forecast Chart
+        const forecastChart = new Chart(document.getElementById('forecastChart'), {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                datasets: [{
+                    label: 'AQI Forecast',
+                    data: [50, 55, 60, 58, 62, 65, 63],
+                    borderColor: '#3F51B5',
+                    backgroundColor: 'rgba(63, 81, 181, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Form submission
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Here you would typically send the form data to your backend for prediction
+            alert('Prediction request sent! (This is a placeholder for the actual prediction logic)');
+        });
+    </script>
+</body>
+</html>
